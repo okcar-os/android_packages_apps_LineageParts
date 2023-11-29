@@ -1,18 +1,7 @@
 /*
- * Copyright (C) 2016 The CyanogenMod project
- *               2017-2022 The LineageOS project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2016 The CyanogenMod project
+ * SPDX-FileCopyrightText: 2017-2023 The LineageOS project
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.lineageos.lineageparts.input;
@@ -36,7 +25,6 @@ import android.provider.Settings;
 import android.util.ArraySet;
 import android.util.Log;
 import android.view.Display;
-import android.view.DisplayInfo;
 import android.view.IWindowManager;
 import android.view.WindowManagerGlobal;
 
@@ -55,7 +43,6 @@ import org.lineageos.lineageparts.search.BaseSearchIndexProvider;
 import org.lineageos.lineageparts.search.Searchable;
 import org.lineageos.lineageparts.utils.DeviceUtils;
 import org.lineageos.lineageparts.utils.TelephonyUtils;
-import org.lineageos.internal.util.ScreenType;
 
 import static org.lineageos.internal.util.DeviceKeysConstants.*;
 
@@ -123,7 +110,6 @@ public class ButtonSettings extends SettingsPreferenceFragment
     private static final String CATEGORY_APPSWITCH = "app_switch_key";
     private static final String CATEGORY_CAMERA = "camera_key";
     private static final String CATEGORY_VOLUME = "volume_keys";
-    private static final String CATEGORY_BACKLIGHT = "key_backlight";
     private static final String CATEGORY_NAVBAR = "navigation_bar_category";
     private static final String CATEGORY_EXTRAS = "extras_category";
 
@@ -170,7 +156,7 @@ public class ButtonSettings extends SettingsPreferenceFragment
         addPreferencesFromResource(R.xml.button_settings);
 
         final Resources res = getResources();
-        final ContentResolver resolver = getActivity().getContentResolver();
+        final ContentResolver resolver = requireActivity().getContentResolver();
         final PreferenceScreen prefScreen = getPreferenceScreen();
 
         final boolean hasPowerKey = DeviceUtils.hasPowerKey();
@@ -279,11 +265,11 @@ public class ButtonSettings extends SettingsPreferenceFragment
         updateDisableNavkeysCategories(mDisableNavigationKeys.isChecked(), /* force */ true);
 
         if (hasPowerKey) {
-            if (!TelephonyUtils.isVoiceCapable(getActivity())) {
+            if (!TelephonyUtils.isVoiceCapable(requireActivity())) {
                 powerCategory.removePreference(mPowerEndCall);
                 mPowerEndCall = null;
             }
-            if (!DeviceUtils.deviceSupportsFlashLight(getActivity())) {
+            if (!DeviceUtils.deviceSupportsFlashLight(requireActivity())) {
                 powerCategory.removePreference(torchLongPressPowerGesture);
                 powerCategory.removePreference(mTorchLongPressPowerTimeout);
             }
@@ -297,7 +283,7 @@ public class ButtonSettings extends SettingsPreferenceFragment
                 homeCategory.removePreference(findPreference(KEY_HOME_WAKE_SCREEN));
             }
 
-            if (!TelephonyUtils.isVoiceCapable(getActivity())) {
+            if (!TelephonyUtils.isVoiceCapable(requireActivity())) {
                 homeCategory.removePreference(mHomeAnswerCall);
                 mHomeAnswerCall = null;
             }
@@ -405,7 +391,7 @@ public class ButtonSettings extends SettingsPreferenceFragment
                 volumeCategory.removePreference(findPreference(KEY_VOLUME_WAKE_SCREEN));
             }
 
-            if (!TelephonyUtils.isVoiceCapable(getActivity())) {
+            if (!TelephonyUtils.isVoiceCapable(requireActivity())) {
                 volumeCategory.removePreference(findPreference(KEY_VOLUME_ANSWER_CALL));
             }
 
@@ -441,7 +427,7 @@ public class ButtonSettings extends SettingsPreferenceFragment
         }
 
         final ButtonBacklightBrightness backlight = findPreference(KEY_BUTTON_BACKLIGHT);
-        if (!DeviceUtils.hasButtonBacklightSupport(getActivity())
+        if (!DeviceUtils.hasButtonBacklightSupport(requireActivity())
                 && !DeviceUtils.hasKeyboardBacklightSupport(getActivity())) {
             prefScreen.removePreference(backlight);
         }
@@ -475,13 +461,13 @@ public class ButtonSettings extends SettingsPreferenceFragment
 
         mEnableTaskbar = findPreference(KEY_ENABLE_TASKBAR);
         if (mEnableTaskbar != null) {
-            if (!isLargeScreen(getContext()) || !hasNavigationBar()) {
+            if (!isLargeScreen(requireContext()) || !hasNavigationBar()) {
                 mNavigationPreferencesCat.removePreference(mEnableTaskbar);
             } else {
                 mEnableTaskbar.setOnPreferenceChangeListener(this);
                 mEnableTaskbar.setChecked(LineageSettings.System.getInt(resolver,
                         LineageSettings.System.ENABLE_TASKBAR,
-                        isLargeScreen(getContext()) ? 1 : 0) == 1);
+                        isLargeScreen(requireContext()) ? 1 : 0) == 1);
                 toggleTaskBarDependencies(mEnableTaskbar.isChecked());
             }
         }
@@ -600,14 +586,14 @@ public class ButtonSettings extends SettingsPreferenceFragment
         String value = (String) newValue;
         int index = pref.findIndexOfValue(value);
         pref.setSummary(pref.getEntries()[index]);
-        LineageSettings.System.putInt(getContentResolver(), setting, Integer.valueOf(value));
+        LineageSettings.System.putInt(getContentResolver(), setting, Integer.parseInt(value));
     }
 
     private void handleSystemListChange(ListPreference pref, Object newValue, String setting) {
         String value = (String) newValue;
         int index = pref.findIndexOfValue(value);
         pref.setSummary(pref.getEntries()[index]);
-        Settings.System.putInt(getContentResolver(), setting, Integer.valueOf(value));
+        Settings.System.putInt(getContentResolver(), setting, Integer.parseInt(value));
     }
 
     @Override
@@ -669,7 +655,7 @@ public class ButtonSettings extends SettingsPreferenceFragment
             return true;
         } else if (preference == mEnableTaskbar) {
             toggleTaskBarDependencies((Boolean) newValue);
-            if ((Boolean) newValue && is2ButtonNavigationEnabled(getContext())) {
+            if ((Boolean) newValue && is2ButtonNavigationEnabled(requireContext())) {
                 // Let's switch to gestural mode if user previously had 2 buttons enabled.
                 setButtonNavigationMode(NAV_BAR_MODE_GESTURAL_OVERLAY);
             }
@@ -716,7 +702,8 @@ public class ButtonSettings extends SettingsPreferenceFragment
     }
 
     private void updateDisableNavkeysOption() {
-        boolean enabled = LineageSettings.System.getIntForUser(getActivity().getContentResolver(),
+        boolean enabled = LineageSettings.System.getIntForUser(
+                requireActivity().getContentResolver(),
                 LineageSettings.System.FORCE_SHOW_NAVBAR, 0, UserHandle.USER_CURRENT) != 0;
 
         mDisableNavigationKeys.setChecked(enabled);
@@ -749,7 +736,7 @@ public class ButtonSettings extends SettingsPreferenceFragment
         /* Toggle hardkey control availability depending on navbar state */
         if (mNavigationPreferencesCat != null) {
             if (force || navbarEnabled) {
-                if (DeviceUtils.isEdgeToEdgeEnabled(getContext())) {
+                if (DeviceUtils.isEdgeToEdgeEnabled(requireContext())) {
                     mNavigationPreferencesCat.addPreference(mEdgeLongSwipeAction);
 
                     mNavigationPreferencesCat.removePreference(mNavigationArrowKeys);
@@ -858,10 +845,10 @@ public class ButtonSettings extends SettingsPreferenceFragment
                 /* Disable the re-orient functionality */
                 value = 0;
             }
-            LineageSettings.System.putInt(getActivity().getContentResolver(),
+            LineageSettings.System.putInt(requireActivity().getContentResolver(),
                     LineageSettings.System.SWAP_VOLUME_KEYS_ON_ROTATION, value);
         } else if (preference == mVolumePanelOnLeft) {
-            LineageSettings.Secure.putIntForUser(getActivity().getContentResolver(),
+            LineageSettings.Secure.putIntForUser(requireActivity().getContentResolver(),
                     LineageSettings.Secure.VOLUME_PANEL_ON_LEFT,
                     mVolumePanelOnLeft.isChecked() ? 1 : 0, UserHandle.USER_CURRENT);
             return true;
@@ -871,16 +858,13 @@ public class ButtonSettings extends SettingsPreferenceFragment
             if (!mDisableNavigationKeys.isChecked()) {
                 setButtonNavigationMode(NAV_BAR_MODE_3BUTTON_OVERLAY);
             }
-            writeDisableNavkeysOption(getActivity(), mDisableNavigationKeys.isChecked());
+            writeDisableNavkeysOption(requireActivity(), mDisableNavigationKeys.isChecked());
             updateDisableNavkeysOption();
             updateDisableNavkeysCategories(true, false);
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mDisableNavigationKeys.setEnabled(true);
-                    mNavigationPreferencesCat.setEnabled(mDisableNavigationKeys.isChecked());
-                    updateDisableNavkeysCategories(mDisableNavigationKeys.isChecked(), false);
-                }
+            mHandler.postDelayed(() -> {
+                mDisableNavigationKeys.setEnabled(true);
+                mNavigationPreferencesCat.setEnabled(mDisableNavigationKeys.isChecked());
+                updateDisableNavkeysCategories(mDisableNavigationKeys.isChecked(), false);
             }, 1000);
         } else if (preference == mPowerEndCall) {
             handleTogglePowerButtonEndsCallPreferenceClick();
@@ -912,7 +896,7 @@ public class ButtonSettings extends SettingsPreferenceFragment
 
         @Override
         public Set<String> getNonIndexableKeys(Context context) {
-            final Set<String> result = new ArraySet<String>();
+            final Set<String> result = new ArraySet<>();
 
             if (!TelephonyUtils.isVoiceCapable(context)) {
                 result.add(KEY_POWER_END_CALL);

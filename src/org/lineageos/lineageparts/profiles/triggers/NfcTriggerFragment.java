@@ -1,22 +1,12 @@
 /*
- * Copyright (C) 2014 The CyanogenMod Project
- *               2017,2021-2022 The LineageOS Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2014 The CyanogenMod Project
+ * SPDX-FileCopyrightText: 2017-2023 The LineageOS Project
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.lineageos.lineageparts.profiles.triggers;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -60,17 +50,17 @@ public class NfcTriggerFragment extends Fragment implements NFCProfileTagCallbac
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mNfcAdapter = NfcAdapter.getDefaultAdapter(getActivity());
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(requireActivity());
         if (getArguments() != null) {
-            mProfile = getArguments().getParcelable(ProfilesSettings.EXTRA_PROFILE);
+            mProfile = getArguments().getParcelable(ProfilesSettings.EXTRA_PROFILE, Profile.class);
         }
-        ((PartsActivity) getActivity()).setNfcProfileCallback(this);
+        ((PartsActivity) requireActivity()).setNfcProfileCallback(this);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        ((PartsActivity) getActivity()).setNfcProfileCallback(null);
+        ((PartsActivity) requireActivity()).setNfcProfileCallback(null);
     }
 
     @Override
@@ -88,9 +78,10 @@ public class NfcTriggerFragment extends Fragment implements NFCProfileTagCallbac
     }
 
     private PendingIntent getPendingIntent() {
-        Intent intent = new Intent(getActivity(), getActivity().getClass())
+        Activity activity = requireActivity();
+        Intent intent = new Intent(activity, activity.getClass())
                 .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        return PendingIntent.getActivity(getActivity(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
+        return PendingIntent.getActivity(requireActivity(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
     }
 
     private void disableTagWriteMode() {
@@ -102,17 +93,18 @@ public class NfcTriggerFragment extends Fragment implements NFCProfileTagCallbac
         IntentFilter[] writeTagFilters = new IntentFilter[]{
                 tagDetected
         };
-        mNfcAdapter.enableForegroundDispatch(getActivity(), getPendingIntent(), writeTagFilters,
+        mNfcAdapter.enableForegroundDispatch(requireActivity(), getPendingIntent(), writeTagFilters,
                 null);
     }
 
     @Override
     public void onTagRead(Tag tag) {
+        Activity activity = requireActivity();
         if (NFCProfileUtils.writeTag(NFCProfileUtils.getProfileAsNdef(mProfile), tag)) {
-            Toast.makeText(getActivity(), R.string.profile_write_success, Toast.LENGTH_LONG).show();
-            NFCProfileUtils.vibrate(getActivity());
+            Toast.makeText(activity, R.string.profile_write_success, Toast.LENGTH_LONG).show();
+            NFCProfileUtils.vibrate(requireActivity());
         } else {
-            Toast.makeText(getActivity(), R.string.profile_write_failed, Toast.LENGTH_LONG).show();
+            Toast.makeText(activity, R.string.profile_write_failed, Toast.LENGTH_LONG).show();
         }
     }
 

@@ -1,18 +1,7 @@
 /*
- * Copyright (C) 2016 The CyanogenMod Project
- *               2017-2019,2021-2023 The LineageOS Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2016 The CyanogenMod Project
+ * SPDX-FileCopyrightText: 2017-2023 The LineageOS Project
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.lineageos.lineageparts;
@@ -149,7 +138,7 @@ public class PartsActivity extends CollapsingToolbarBaseActivity implements
     @Override
     protected void onNewIntent(Intent intent) {
         if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
-            Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+            Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag.class);
             if (mNfcProfileCallback != null) {
                 mNfcProfileCallback.onTagRead(detectedTag);
             }
@@ -162,7 +151,7 @@ public class PartsActivity extends CollapsingToolbarBaseActivity implements
     public void onBackPressed() {
         setTitle(mInitialTitle);
 
-        if (!getFragmentManager().popBackStackImmediate()) {
+        if (!getSupportFragmentManager().popBackStackImmediate()) {
             super.onBackPressed();
         }
     }
@@ -200,11 +189,7 @@ public class PartsActivity extends CollapsingToolbarBaseActivity implements
 
     public boolean switchToFragment(String fragmentClass, Bundle args, int titleRes,
                                     CharSequence titleText) {
-        Fragment fragment = Fragment.instantiate(this, fragmentClass);
-        if (fragment == null) {
-            Log.e(TAG, "Invalid fragment! " + fragmentClass);
-            return false;
-        }
+        Fragment fragment = Fragment.instantiate(this, fragmentClass, null);
         return switchToFragment(fragment, args, titleRes, titleText);
     }
 

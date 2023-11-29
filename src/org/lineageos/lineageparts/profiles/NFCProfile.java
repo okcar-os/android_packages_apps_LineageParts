@@ -1,18 +1,7 @@
 /*
- * Copyright (C) 2012 The CyanogenMod Project
- *               2017-2018 The LineageOS Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2012 The CyanogenMod Project
+ * SPDX-FileCopyrightText: 2017-2023 The LineageOS Project
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.lineageos.lineageparts.profiles;
@@ -64,7 +53,8 @@ public class NFCProfile extends Activity {
         Intent intent = getIntent();
         String action = intent.getAction();
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
-            Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+            Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES,
+                    Parcelable.class);
             if (rawMsgs != null) {
                 NdefMessage[] msgs = new NdefMessage[rawMsgs.length];
                 for (int i = 0; i < rawMsgs.length; i++) {
@@ -72,8 +62,7 @@ public class NFCProfile extends Activity {
                     for (NdefRecord record : msgs[i].getRecords()) {
                         String type = new String(record.getType());
                         byte[] payload = record.getPayload();
-                        if (PROFILE_MIME_TYPE.equals(type) && payload != null
-                                && payload.length == 16) {
+                        if (PROFILE_MIME_TYPE.equals(type) && payload.length == 16) {
                             handleProfileMimeType(payload);
                         }
                     }
