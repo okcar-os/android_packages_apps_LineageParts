@@ -82,7 +82,7 @@ public class StatusBarSettings extends SettingsPreferenceFragment
         LineageSystemSettingListPreference statusBarBattery =
                 findPreference(STATUS_BAR_BATTERY_STYLE);
         statusBarBattery.setOnPreferenceChangeListener(this);
-        enableStatusBarBatteryDependents(statusBarBattery.getIntValue(2));
+        enableStatusBarBatteryDependents(statusBarBattery.getIntValue(0));
 
         mStatusBarBatteryCategory = getPreferenceScreen().findPreference(CATEGORY_BATTERY);
 
